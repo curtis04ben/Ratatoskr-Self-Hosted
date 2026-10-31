@@ -19,17 +19,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import com.ratatoskr.shared.state.AppState
 import kotlinx.coroutines.launch
 
 /** Shared shell for every auth-related screen: centered narrow column,
  * headline, optional lede text, then the form-specific content. Mirrors
- * .lock-card / .lock-form in style.css. */
+ * .lock-card / .lock-form in style.css. `appIcon`, when the platform
+ * supplies one, sits above the headline as a BrandEmblem. */
 @Composable
 private fun AuthScreenShell(
     title: String,
     lede: String? = null,
+    appIcon: Painter? = null,
     content: @Composable () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -38,6 +41,7 @@ private fun AuthScreenShell(
                 .verticalScroll(rememberScrollState()).padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            appIcon?.let { BrandEmblem(it, modifier = Modifier.padding(bottom = 4.dp)) }
             Text(title, style = MaterialTheme.typography.headlineSmall, color = RatatoskrColors.Text)
             if (lede != null) {
                 Text(
@@ -53,7 +57,7 @@ private fun AuthScreenShell(
 }
 
 @Composable
-fun SetupScreen(appState: AppState) {
+fun SetupScreen(appState: AppState, appIcon: Painter? = null) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
@@ -64,6 +68,7 @@ fun SetupScreen(appState: AppState) {
         title = "Create the admin account",
         lede = "No vault found on this server yet. The first account you create becomes the Admin. " +
             "Choose a master password. It is never stored, and there is no reset link, so keep it somewhere safe.",
+        appIcon = appIcon,
     ) {
         RatatoskrTextField(username, { username = it }, "Username", Modifier.fillMaxWidth())
         RatatoskrTextField(password, { password = it }, "Master password", Modifier.fillMaxWidth().padding(top = 10.dp), isPassword = true)
@@ -94,12 +99,12 @@ fun SetupScreen(appState: AppState) {
 }
 
 @Composable
-fun UnlockScreen(appState: AppState) {
+fun UnlockScreen(appState: AppState, appIcon: Painter? = null) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
 
-    AuthScreenShell(title = "Ratatoskr") {
+    AuthScreenShell(title = "Ratatoskr", appIcon = appIcon) {
         // The saved server, so it's clear where these credentials go
         // without re-asking for the address on every launch.
         Text(
@@ -136,8 +141,8 @@ internal fun displayServer(url: String): String =
 /** Shown at launch while reconnecting to the saved server
  * (AppState.restoreSession), in place of the server-address form. */
 @Composable
-fun ConnectingScreen(appState: AppState) {
-    AuthScreenShell(title = "Ratatoskr") {
+fun ConnectingScreen(appState: AppState, appIcon: Painter? = null) {
+    AuthScreenShell(title = "Ratatoskr", appIcon = appIcon) {
         CircularProgressIndicator(color = RatatoskrColors.Brass, modifier = Modifier.padding(16.dp))
         Text(
             if (appState.serverUrl.isEmpty()) "Connecting…"
@@ -149,7 +154,7 @@ fun ConnectingScreen(appState: AppState) {
 }
 
 @Composable
-fun AcceptInviteScreen(appState: AppState) {
+fun AcceptInviteScreen(appState: AppState, appIcon: Painter? = null) {
     var username by remember { mutableStateOf("") }
     var inviteToken by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -158,6 +163,7 @@ fun AcceptInviteScreen(appState: AppState) {
     AuthScreenShell(
         title = "Join with an invite",
         lede = "An admin gave you an invite code and a username. Choose your own master password now. The admin never sees it.",
+        appIcon = appIcon,
     ) {
         RatatoskrTextField(username, { username = it }, "Username", Modifier.fillMaxWidth())
         RatatoskrTextField(inviteToken, { inviteToken = it }, "Invite code", Modifier.fillMaxWidth().padding(top = 10.dp))

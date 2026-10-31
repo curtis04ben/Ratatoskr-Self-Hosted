@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Box(modifier = Modifier.fillMaxSize().background(RatatoskrColors.Bg).safeDrawingPadding()) {
                 RatatoskrApp(
-                    appIcon = painterResource(R.drawable.ratatoskr_icon),
+                    appIcon = painterResource(R.drawable.ratatoskr_emblem),
                     files = files,
                     sessionStore = sessionStore,
                     onAutofillSettings = ::openAutofillSettings,

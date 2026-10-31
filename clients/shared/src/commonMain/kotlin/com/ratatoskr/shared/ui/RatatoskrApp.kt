@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
  * in RatatoskrTheme.
  *
  * `appIcon` is the logo, supplied by the platform (each has its own way to
- * load a bitmap resource); it's shown large on the server-connect screen
+ * load a bitmap resource); it's shown as an emblem on the server-connect and sign-in screens
  * and small at the left of the vault header. `files` likewise
  * comes from the platform and enables CSV import/export when present, and
  * `sessionStore` lets the app remember its server and session across
@@ -87,11 +87,11 @@ fun RatatoskrApp(
         androidx.compose.material3.Surface(modifier = Modifier.fillMaxSize().background(RatatoskrColors.Bg)) {
             when (appState.screen) {
                 Screen.ServerConnect -> ServerConnectScreen(appState, appIcon)
-                Screen.CheckingServer -> ConnectingScreen(appState)
+                Screen.CheckingServer -> ConnectingScreen(appState, appIcon)
 
-                Screen.Setup -> SetupScreen(appState)
-                Screen.Unlock -> UnlockScreen(appState)
-                Screen.AcceptInvite -> AcceptInviteScreen(appState)
+                Screen.Setup -> SetupScreen(appState, appIcon)
+                Screen.Unlock -> UnlockScreen(appState, appIcon)
+                Screen.AcceptInvite -> AcceptInviteScreen(appState, appIcon)
 
                 Screen.Vault -> VaultScreen(
                     appState = appState,
