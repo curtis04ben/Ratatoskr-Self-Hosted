@@ -144,7 +144,7 @@ jobs:
 
           1. On your phone, download \`Ratatoskr-${VERSION}.apk\` below.
           2. Open it. Android will ask you to allow installs from your browser or file manager ("Install unknown apps"). Allow it for that app.
-          3. Tap **Install**. Ratatoskr appears in your app drawer.
+          3. Tap **Install**. It appears in your app drawer as "Ratatoskr Self-Hosted".
 
           Updating: install a newer APK the same way; your saved server carries over.
 

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- The background of shared/assets/ratatoskr-self-hosted.jpg, so the
+         adaptive icon's layers meet seamlessly. -->
+    <color name="ic_launcher_background">#151618</color>
     <!-- RatatoskrColors.Bg in the shared theme -->
-    <color name="ic_launcher_background">#12181C</color>
     <color name="window_background">#12181C</color>
     <!-- Autofill dropdown rows (layout/autofill_item.xml). -->
     <color name="autofill_background">#FFFFFFFF</color>

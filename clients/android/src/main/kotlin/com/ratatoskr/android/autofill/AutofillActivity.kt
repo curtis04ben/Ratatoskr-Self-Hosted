@@ -211,7 +211,7 @@ class AutofillActivity : ComponentActivity() {
 
         LaunchedEffect(Unit) { (if (username.isEmpty()) usernameFocus else passwordFocus).requestFocus() }
 
-        Card(title = "Unlock Ratatoskr", lede = reason) {
+        Card(title = "Unlock ${getString(R.string.app_name)}", lede = reason) {
             RatatoskrTextField(username, { username = it }, "Username", Modifier.fillMaxWidth().focusRequester(usernameFocus))
             RatatoskrTextField(
                 password, { password = it }, "Master password",

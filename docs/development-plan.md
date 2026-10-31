@@ -1,7 +1,7 @@
-# Ratatoskr development plan
+# Ratatoskr (Self-Hosted) development plan
 
 This documents the architecture decisions behind the multi-client Ratatoskr
-project and the planned approach for each native client. It's meant as
+(Self-Hosted) project and the planned approach for each native client. It's meant as
 durable context for whoever (human or AI assistant) picks up client work
 next. It's not a rigid spec, more a record of *why* things are shaped the way
 they are, so that reasoning doesn't have to be reconstructed from scratch
@@ -19,7 +19,7 @@ each time.
 | Windows / macOS | not yet | not yet | Phases 4/5 below: packaging on the same `desktop/` module |
 | Android biometric unlock | not yet | not yet | Phase 3.1 below |
 | Android Autofill | 0.2.0 | with the app | Phase 3.2 below: stages 1 to 3 done |
-| Android standalone (on-device vault) | not yet | not yet | Phase 3.3 below: **next up** |
+| Standalone app (vault on the phone) | moved | separate repo | Now its own project, "Ratatoskr"; see Phase 3.3 below |
 
 Both native apps cover: connect (server remembered), setup, unlock,
 accept-invite, entry list/search/create/edit/delete, live TOTP, password
@@ -28,6 +28,17 @@ apps yet (web UI only): sharing, the admin Users panel, factory reset.
 
 **Decisions already made by the project owner** (don't re-ask; revisit
 only if something makes one unworkable, and say so):
+
+- **Two products (2026-10-31).** This repo is **Ratatoskr (Self-Hosted)**:
+  server, web UI, desktop and Android clients, **free**, on GitHub
+  Releases. The standalone phone app is **Ratatoskr**, a separate repo,
+  headed for the Google Play Store. They no longer share code; each
+  repo owns its copy.
+- **Logo:** `shared/assets/ratatoskr-self-hosted.jpg` (the squirrel over
+  a server), used for every icon here: web favicon and header, Linux
+  icons, Android launcher. The original squirrel SVG belongs to
+  standalone Ratatoskr. The Android app's launcher name is "Ratatoskr
+  Self-Hosted", so the two are easy to tell apart on one phone.
 
 - **Two releases: Desktop and Mobile.** A `desktop-vX.Y.Z` tag builds
   Linux (`.rpm`, `.deb`, AppImage), Windows (`.exe`) and macOS (`.pkg`)
@@ -53,10 +64,9 @@ only if something makes one unworkable, and say so):
 
 **Suggested order of work** (the owner may reorder):
 
-0. **Android standalone app** (Phase 3.3): **next up, owner's choice.** A
-   version of the Android app with no server: the vault lives on the
-   phone. Its biometric unlock (Phase 3.1) is folded in, and is simpler
-   there than in the server app.
+0. ~~**Android standalone app** (Phase 3.3).~~ Built, then split out on
+   2026-10-31 into its own project, **Ratatoskr** (separate repo), which
+   is headed for the Play Store. Nothing more to do for it here.
 1. **Android biometric unlock** (Phase 3.1): self-contained, testable on
    the owner's phone, and the Autofill unlock flow reuses it.
 2. **Desktop/Mobile release pipelines** (Release plan): turn the Linux
@@ -150,7 +160,7 @@ Ratatoskr/
 │   ├── shared/       portable API client, models, TOTP, app state, UI screens
 │   ├── desktop/      JVM/Compose Desktop entry point, builds Linux, Windows, AND macOS
 │   └── android/      Android app module (AGP 9 requires it separate from shared/)
-├── shared/assets/    master branding (logo SVG) that every client/platform icon derives from
+├── shared/assets/    master logo (ratatoskr-self-hosted.jpg, 1024 px) that every icon derives from
 ├── docs/             this file, plus anything else durable
 └── .github/workflows/  tag-triggered release builds (linux-v*, android-v* today;
                         desktop-v* and mobile-v* planned, see Release plan)
@@ -231,10 +241,9 @@ algorithm in this project (server: Python, web UI: JavaScript, clients:
 Kotlin). All three were checked against the official RFC 6238 Appendix B
 test vectors and against each other during development.
 
-**Exception, Phase 3.3:** the standalone Android app has no server, so it
-does its own vault crypto (Argon2id, AES-GCM) on the phone. That's a
-separate, simpler scheme (one user, no sharing), described there. The
-server-connected apps stay thin clients.
+**The standalone app is different:** Ratatoskr (its own repo now, see
+Phase 3.3) has no server, so it does its own vault crypto (Argon2id,
+AES-GCM) on the phone. The clients in this repo stay thin.
 
 If true end-to-end zero-knowledge (server never sees the master password,
 only pre-encrypted blobs) is ever wanted, that's a materially bigger
@@ -510,152 +519,22 @@ decision. A password manager requesting autofill/accessibility
 permissions gets real scrutiny in Play's review process; not a v1
 assumption.
 
-### Phase 3.3: Android standalone app, vault on the phone (next up)
+### Phase 3.3: Android standalone app (moved to its own repo)
 
-Goal: an Android app people can just install and use, with no
-self-hosted server: setup, unlock, entries, 2FA codes, generator, CSV
-import/export, change master password and Autofill all work as they do
-today, but the encrypted vault is stored on the phone. It should look
-and behave almost identically to the server-connected app.
+Built here as a second Android edition, "Ratatoskr (Local)", on
+2026-10-31, then split into its own project, **Ratatoskr**: the vault is
+on the phone (Argon2id-wrapped vault key, AES-GCM per entry), no server
+and no internet permission, with encrypted backup files. Its plan,
+including the Google Play checklist, is in that repo's
+`docs/development-plan.md`.
 
-**What changes when there's no server.** Today the phone is a thin
-client: the server derives the key from the master password, decrypts
-entries and generates passwords (see "Client-side crypto" above). A
-standalone app has to do those jobs itself:
-
-| Server does today | Standalone app |
-|---|---|
-| Argon2id key derivation, private-key unwrap (`crypto.py`) | On the phone (scheme below) |
-| Encrypted storage in SQLite (`database.py`) | SQLite on the phone, one encrypted blob per entry |
-| Sessions with a 30-minute idle timeout (`sessions.py`) | Vault key held in memory; auto-lock after idle (same 30 minutes by default) and on Lock |
-| Password generator (`routers/generator.py`) | Port to Kotlin (`SecureRandom`), same options |
-| CSV import incl. other managers' header names (`routers/vault.py`, `_HEADER_SYNONYMS`) | Port to Kotlin, same rules, so imports behave identically |
-| CSV export | Port (same columns) |
-| TOTP codes | Already computed on the device (`Totp.kt`) |
-| Users, roles, invites, sharing, admin recovery, factory reset | Not applicable: one user. Factory reset becomes "Erase vault" |
-
-**Architecture: one codebase, a backend interface.**
-
-- Add a `VaultBackend` interface in `clients/shared` (commonMain) covering
-  what `AppState` and Autofill use: status/setup/unlock/lock,
-  change password, list/create/update/delete entries, generate password,
-  import/export CSV. Two implementations:
-  - `RemoteVaultBackend`: wraps today's `RatatoskrApiClient` (no
-    behaviour change for the server app);
-  - `LocalVaultBackend`: the on-device vault. Crypto and storage are
-    platform code (androidMain for now; iOS could reuse the design later).
-- `AppState` talks to a `VaultBackend` instead of `RatatoskrApiClient`
-  directly (today `AppState.api()` leaks the client to `GeneratorDialog`;
-  route that through the backend too). Small capability flags hide what
-  doesn't apply locally: the server screen, "Change server", invites, the
-  role badge.
-- Autofill's `AutofillVault` switches to the same interface, so the
-  service works unchanged on either backend. Locally, "unlocked" means the
-  vault key is in memory in the app's process; if the process has died,
-  the existing unlock screen appears.
-- **Do this refactor first, as its own step**, and release it in the
-  server app before any local code exists, so a regression is easy to pin
-  down.
-
-**Local crypto scheme** (single user, so far simpler than the server's
-X25519 sealing; same primitives, so it's reviewable against `crypto.py`):
-
-- Setup: random 16-byte salt; KEK = Argon2id(master password, salt).
-  Generate a random 256-bit **vault key**; store it wrapped:
-  AES-256-GCM(KEK, vault key). Store salt, Argon2 parameters and the
-  wrapped key in a `meta` table. The master password is never stored.
-- Each entry: JSON of `EntryIn` fields, AES-256-GCM under the vault key,
-  random 12-byte nonce, with the entry id as associated data (so blobs
-  can't be swapped between rows). Store id, created/updated times, blob.
-- Unlock: derive KEK, unwrap; a GCM tag failure means a wrong password.
-- Change master password: new salt, re-wrap the vault key only. Entries
-  are untouched.
-- Argon2id on Android needs a library: `argon2kt` (JNI wrapper of the
-  reference C code, fast) or BouncyCastle's `Argon2BytesGenerator`
-  (pure Java, slower, no native code). Decide when starting; check
-  current versions and test against the RFC 9106 test vectors either way.
-  Parameters: the server's 256 MiB is too much for a phone; calibrate on
-  the Galaxy A55 for about 1 second (likely 64 MiB, t=3, p=2) and store
-  them per vault so they can be raised later.
-- Storage: plain SQLite via the platform API is enough. If iOS ever gets
-  the same app, SQLDelight (KMP) is the shared option; not worth it yet.
-- Strings can't be wiped in Kotlin; keep the vault key in a `ByteArray`,
-  zero it on lock, and don't pretend more than that.
-
-**Biometric unlock (Phase 3.1, adapted).** Locally there's a better
-design than storing the master password: wrap the **vault key** a second
-time under a biometric-bound Keystore key (same Keystore settings as 3.1:
-`BIOMETRIC_STRONG`, invalidated on new enrolment). A fingerprint unwraps
-the vault key directly. Same invalidation rules; changing the master
-password doesn't invalidate it (the vault key doesn't change).
-
-**The real risk: losing the phone loses the vault.** There's no server
-copy. Plan for it from the start:
-
-- **Encrypted backup file**: "Back up vault" writes the salt, parameters,
-  wrapped vault key and entry blobs to a single file through the system
-  file picker (save to Drive, a PC, etc.). Restoring needs the master
-  password. Add "Restore from backup" to the setup screen.
-- A gentle reminder when the last backup is old (e.g. 30 days, or after N
-  new entries), dismissible.
-- CSV export/import stays as the way to move to or from a self-hosted
-  server or another manager.
-- Keep `allowBackup` off and the data-extraction exclusions: the backup
-  file is the deliberate, user-controlled copy.
-
-**Packaging: a second app, from a product flavour (recommended).**
-`clients/android` gets two flavours: `selfhosted` (today's app, unchanged
-ID `io.github.curtis04ben.ratatoskr`) and `standalone`. Reasons for a
-separate app rather than a mode inside the current one:
-
-- the standalone manifest can omit `INTERNET` entirely, so the app
-  provably can't send the vault anywhere, which is the main selling point
-  and easy to state in a store listing;
-- simpler first run (no server screen at all) and no "which mode am I
-  in" confusion;
-- both can be installed side by side.
-
-The cost is a second application ID and two APKs per Mobile release.
-(Decided: separate flavour, see below.)
-
-**Owner decisions (made 2026-10-31; don't re-ask):**
-
-1. **A separate app**, built as a `standalone` product flavour (not a mode
-   in the existing app).
-2. **Name "Ratatoskr Local", application ID
-   `io.github.curtis04ben.ratatoskr.local`** (permanent once released).
-3. **Backups:** the encrypted backup file and restore, plus the reminder,
-   as described above.
-4. **Auto-lock after 30 minutes idle**; configurable later. Not on screen
-   off for now.
-5. **Distribution: GitHub Releases first.** The Play Store stays a later,
-   deliberate decision (it's the natural Play candidate when that comes).
-6. **Versioning:** shares the Mobile release version with the server app.
-
-**Stages:**
-
-1. `VaultBackend` refactor, remote only; server app released with no
-   visible change.
-2. Local crypto + storage + `LocalVaultBackend`, with JVM unit tests
-   (Argon2 vectors, wrap/unwrap, wrong password, tampered blob, id swap,
-   change password).
-3. `standalone` flavour: setup, unlock, lock/auto-lock, entries, change
-   password, erase vault; UI flags for what's hidden.
-4. Generator and CSV import/export ported (tests: same output shape as
-   the server for the same CSVs, including other managers' headers).
-5. Encrypted backup and restore, and the reminder.
-6. Autofill on the local backend.
-7. Biometric unlock (adapted 3.1).
-8. Release: the Mobile release workflow builds and signs both flavours
-   (`Ratatoskr-X.Y.Z.apk` and `Ratatoskr-Local-X.Y.Z.apk`).
-
-**Testing** (on the test phone, which can be changed freely): fresh
-install, setup, add/edit/delete; kill the process and relaunch; idle
-auto-lock; wrong password; change password then unlock; backup, uninstall,
-reinstall, restore; import the Samsung Pass CSV path again; Autofill in a
-real app (Immich worked well for 3.2); confirm the APK has no `INTERNET`
-permission (`aapt2 dump permissions`). Unlock time on the A55 with the
-chosen Argon2 parameters should be checked and noted here.
+What stayed here from that work, because it improves this app too:
+`VaultBackend`/`RemoteVaultBackend` (`clients/shared/.../backend/`), so
+`AppState` and the screens don't call the HTTP client directly; a 401 on
+a vault call returns to Unlock instead of showing an error over a dead
+session; dialogs close when leaving the vault; and autofill ignores both
+apps' own screens (`isRatatoskrApp`), so neither offers to save the
+other's master password.
 
 ### Release plan: Desktop and Mobile releases (decided)
 
@@ -874,9 +753,8 @@ notes.
 
 - **Icon:** a real `.icns`. Generate on the macOS runner (or the Mac):
   make a `ratatoskr.iconset/` of PNGs (`icon_16x16.png` … `icon_512x512@2x.png`,
-  16–1024 px) from `shared/assets/ratatoskr-mark.svg` or
-  `desktop/icons/ratatoskr_512.png` (upscaling 512 → 1024 is soft; the SVG
-  is better), then `iconutil -c icns ratatoskr.iconset`. Commit the `.icns`.
+  16–1024 px) from `shared/assets/ratatoskr-self-hosted.jpg` (1024 px, so
+  no upscaling), then `iconutil -c icns ratatoskr.iconset`. Commit the `.icns`.
 - **The `macos` job:** `runs-on: macos-latest`, Temurin 21 for arm64,
   `./gradlew --no-daemon :desktop:packagePkg`, rename the output to
   `Ratatoskr-X.Y.Z-arm64.pkg`.

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Distinct from the standalone Ratatoskr app (a separate project), so
+         the two are easy to tell apart on a phone with both. -->
+    <string name="app_name">Ratatoskr Self-Hosted</string>
+</resources>

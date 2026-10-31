@@ -30,6 +30,14 @@ data class AutofillTarget(val packageName: String, val webDomain: String?) {
 
 const val APP_URL_SCHEME = "androidapp://"
 
+/** This app or the standalone Ratatoskr app (`...ratatoskr.local`),
+ * release or debug build. Autofill stays out of them: their password
+ * fields are master passwords, which belong in neither vault. */
+fun isRatatoskrApp(packageName: String): Boolean =
+    packageName == RATATOSKR_APP_ID || packageName.startsWith("$RATATOSKR_APP_ID.")
+
+private const val RATATOSKR_APP_ID = "io.github.curtis04ben.ratatoskr"
+
 /** Browsers whose reported web domain is believed. Each passes autofill
  * the domain of the page actually showing, and none lets a page script
  * read another site's fields. */

@@ -13,8 +13,8 @@
     </p>
   </description>
   <launchable type="desktop-id">io.github.curtis04ben.Ratatoskr.desktop</launchable>
-  <url type="homepage">https://github.com/curtis04ben/Ratatoskr</url>
-  <url type="bugtracker">https://github.com/curtis04ben/Ratatoskr/issues</url>
+  <url type="homepage">https://github.com/curtis04ben/Ratatoskr-Self-Hosted</url>
+  <url type="bugtracker">https://github.com/curtis04ben/Ratatoskr-Self-Hosted/issues</url>
   <developer id="io.github.curtis04ben">
     <name>Ben Curtis</name>
   </developer>

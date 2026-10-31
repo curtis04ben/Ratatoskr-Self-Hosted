@@ -43,9 +43,10 @@ class RatatoskrAutofillService : AutofillService() {
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
         val form = FormParser.parse(request.fillContexts.last().structure)
         val vault = AutofillVault(this)
-        // Not our own screens (the master password field), and nothing
-        // until the app has been connected to a server.
-        if (form == null || form.target.packageName == packageName || vault.serverUrl == null) {
+        // Not Ratatoskr's own screens (the master password field, in this
+        // app or Ratatoskr's standalone one), and nothing until the app has
+        // been connected to a server.
+        if (form == null || isRatatoskrApp(form.target.packageName) || vault.serverUrl == null) {
             callback.onSuccess(null)
             return
         }
@@ -77,7 +78,7 @@ class RatatoskrAutofillService : AutofillService() {
         // username was typed on an earlier one.
         val forms = request.fillContexts.asReversed().mapNotNull { FormParser.parse(it.structure) }
         val form = forms.firstOrNull { !it.passwordValue.isNullOrEmpty() }
-        if (form == null || form.target.packageName == packageName) {
+        if (form == null || isRatatoskrApp(form.target.packageName)) {
             callback.onSuccess()
             return
         }

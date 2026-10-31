@@ -59,7 +59,7 @@ fun GeneratorDialog(
     suspend fun regenerate() {
         error = null
         try {
-            val response = appState.api().generatePassword(
+            generated = appState.generatePassword(
                 GenerateRequest(
                     length = length.toInt(),
                     use_upper = useUpper,
@@ -69,7 +69,6 @@ fun GeneratorDialog(
                     avoid_ambiguous = avoidAmbiguous,
                 )
             )
-            generated = response.password
         } catch (e: Exception) {
             error = e.message ?: "Couldn't generate a password"
         }

@@ -67,13 +67,13 @@ class MainActivity : ComponentActivity() {
      * screen closes itself immediately if it already is, so say so. */
     private fun openAutofillSettings() {
         if (getSystemService(AutofillManager::class.java)?.hasEnabledAutofillServices() == true) {
-            Toast.makeText(this, "Ratatoskr is your autofill service", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "${getString(R.string.app_name)} is your autofill service", Toast.LENGTH_SHORT).show()
             return
         }
         try {
             startActivity(Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE, Uri.parse("package:$packageName")))
         } catch (_: Exception) {
-            Toast.makeText(this, "Choose Ratatoskr under Settings, Passwords and autofill", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Choose ${getString(R.string.app_name)} under Settings, Passwords and autofill", Toast.LENGTH_LONG).show()
         }
     }
 }

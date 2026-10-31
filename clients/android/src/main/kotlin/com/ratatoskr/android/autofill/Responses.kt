@@ -27,7 +27,7 @@ object Responses {
     fun unlocked(context: Context, form: LoginForm, matches: List<EntryOut>): FillResponse {
         val builder = FillResponse.Builder()
         matches.take(MAX_SUGGESTIONS).mapNotNull { dataset(context, form, it) }.forEach(builder::addDataset)
-        val search = Dataset.Builder(presentation(context, "Search Ratatoskr…", if (matches.isEmpty()) "No saved login for this ${form.target.kind}" else null))
+        val search = Dataset.Builder(presentation(context, "Search ${context.getString(R.string.app_name)}…", if (matches.isEmpty()) "No saved login for this ${form.target.kind}" else null))
         for (id in form.ids) search.setValue(id, null)
         search.setAuthentication(activitySender(context, AutofillActivity.MODE_PICK))
         builder.addDataset(search.build())
@@ -39,7 +39,7 @@ object Responses {
      * this response with unlocked()'s. */
     fun locked(context: Context, form: LoginForm): FillResponse {
         val builder = FillResponse.Builder()
-            .setAuthentication(form.ids, activitySender(context, AutofillActivity.MODE_UNLOCK), presentation(context, "Unlock Ratatoskr", "to fill a saved login"))
+            .setAuthentication(form.ids, activitySender(context, AutofillActivity.MODE_UNLOCK), presentation(context, "Unlock ${context.getString(R.string.app_name)}", "to fill a saved login"))
         saveInfo(form)?.let(builder::setSaveInfo)
         return builder.build()
     }

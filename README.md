@@ -1,6 +1,6 @@
-# Ratatoskr
+# Ratatoskr (Self-Hosted)
 
-A self-hosted, multi-user password manager for a household or small trusted
+A free, self-hosted, multi-user password manager for a household or small trusted
 group. One small server holds everyone's vault; you reach it from a web
 browser, a Linux desktop app or an Android app, with more platforms on the
 way.
@@ -10,13 +10,18 @@ between the eagle at its crown and the serpent at its roots, a fitting
 namesake for something that carries your credentials exactly where they
 need to go, and nowhere else.
 
+Don't want to run a server? **Ratatoskr** (without "Self-Hosted") is a
+separate, standalone Android app that keeps an encrypted vault on the
+phone itself, with no account and no internet access. It's a different
+project, headed for the Google Play Store; this one stays free.
+
 ## Platforms
 
 | Platform | Status | Get it |
 |---|---|---|
 | **Web** | ✅ Available | Built into the server. Open it in any browser |
-| **Linux** desktop | ✅ Available | [Releases](https://github.com/curtis04ben/Ratatoskr/releases), "Ratatoskr Linux client" (`.rpm`, `.deb`, AppImage) |
-| **Android** | ✅ Available | [Releases](https://github.com/curtis04ben/Ratatoskr/releases), "Ratatoskr Android" (`.apk`, Android 8.0+) |
+| **Linux** desktop | ✅ Available | [Releases](https://github.com/curtis04ben/Ratatoskr-Self-Hosted/releases), "Ratatoskr Linux client" (`.rpm`, `.deb`, AppImage) |
+| **Android** | ✅ Available | [Releases](https://github.com/curtis04ben/Ratatoskr-Self-Hosted/releases), "Ratatoskr Android" (`.apk`, Android 8.0+) |
 | **Windows** | 🚧 In the works | Same desktop app as Linux; needs Windows packaging |
 | **macOS** | 🚧 In the works | Same desktop app as Linux; needs macOS packaging |
 | **iOS** | 🗓️ Planned | |
@@ -95,8 +100,8 @@ packaging work on the existing desktop app rather than new apps.
 
 1. **Run the server.** On any machine with Docker:
    ```bash
-   git clone https://github.com/curtis04ben/Ratatoskr.git
-   cd Ratatoskr/server
+   git clone https://github.com/curtis04ben/Ratatoskr-Self-Hosted.git
+   cd Ratatoskr-Self-Hosted/server
    docker compose up -d --build
    ```
    Then open `http://<host>:8000` and create the admin account. See
@@ -104,7 +109,7 @@ packaging work on the existing desktop app rather than new apps.
    data lives, backups and configuration.
 2. **Invite anyone else** from the web UI's **Users** panel.
 3. **Install the apps** you want from the
-   [Releases page](https://github.com/curtis04ben/Ratatoskr/releases), and
+   [Releases page](https://github.com/curtis04ben/Ratatoskr-Self-Hosted/releases), and
    enter your server's address the first time you open them:
    - **Fedora / RHEL:** `sudo dnf install ./ratatoskr-<version>-1.x86_64.rpm`
    - **Debian / Ubuntu:** `sudo apt install ./ratatoskr_<version>_amd64.deb`
@@ -142,7 +147,7 @@ clients/              Native apps (Kotlin Multiplatform + Compose Multiplatform)
   clients/shared/       API client, models and every screen, shared by all apps
   clients/desktop/      Desktop app: Linux today, Windows/macOS next
   clients/android/      Android app
-shared/assets/        Master logo that every platform's icon is made from
+shared/assets/        Master logo (ratatoskr-self-hosted.jpg) that every icon is made from
 docs/                 Architecture and per-platform development plan
 .github/workflows/    Release builds for the Linux and Android apps
 ```

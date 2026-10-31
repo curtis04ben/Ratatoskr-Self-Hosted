@@ -75,4 +75,12 @@ class MatchingTest {
         assertEquals("https://example.org", AutofillTarget.of("com.android.chrome", "www.example.org").entryUrl)
         assertEquals("web:google.com", AutofillTarget.of("com.android.chrome", "mail.google.com").pairingKey)
     }
+
+    @Test
+    fun bothEditionsAreLeftAlone() {
+        assertTrue(isRatatoskrApp("io.github.curtis04ben.ratatoskr"))
+        assertTrue(isRatatoskrApp("io.github.curtis04ben.ratatoskr.local"))
+        assertTrue(isRatatoskrApp("io.github.curtis04ben.ratatoskr.local.debug"))
+        assertFalse(isRatatoskrApp("io.github.curtis04ben.ratatoskrfake"))
+    }
 }

@@ -147,14 +147,9 @@ textarea { font-family: var(--font-sans); resize: vertical; }
 .tree-ratatoskr { fill: var(--verdigris); opacity: 0.16; }
 
 /* ---------- logo mark ----------
-   The mark's artwork (a squirrel holding a padlock, from the supplied
-   Draft_Logo.svg) carries its own per-path fill colors rather than
-   inheriting a single CSS-driven tone. Unlike the earlier abstract
-   spiral mark, this is a multi-tone illustration, so there's no single
-   `fill` to hand off to CSS. .mark-lg/.mark-sm still fully control the
-   rendered size via ordinary width/height, same as before; only the
-   sizing is CSS-driven, not the coloring. */
-.mark { overflow: visible; }
+   /logo.png, made from shared/assets/ratatoskr-self-hosted.jpg. The image
+   has its own dark square background, so it's rounded off a little. */
+.mark { border-radius: 18%; }
 .mark-lg { width: 84px; height: 84px; margin: 0 auto 0.75rem; display: block; position: relative; z-index: 1; }
 .mark-sm { width: 30px; height: 30px; flex-shrink: 0; }
 

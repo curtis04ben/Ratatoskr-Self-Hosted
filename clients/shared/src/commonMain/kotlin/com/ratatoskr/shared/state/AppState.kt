@@ -3,12 +3,16 @@ package com.ratatoskr.shared.state
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.ratatoskr.shared.api.AuthResponse
 import com.ratatoskr.shared.api.EntryIn
 import com.ratatoskr.shared.api.EntryOut
+import com.ratatoskr.shared.api.GenerateRequest
 import com.ratatoskr.shared.api.ImportResult
 import com.ratatoskr.shared.api.RatatoskrApiClient
 import com.ratatoskr.shared.api.RatatoskrApiException
 import com.ratatoskr.shared.api.RatatoskrConnectionException
+import com.ratatoskr.shared.backend.RemoteVaultBackend
+import com.ratatoskr.shared.backend.VaultBackend
 import com.ratatoskr.shared.platform.SavedSession
 import com.ratatoskr.shared.platform.SessionStore
 
@@ -34,8 +38,9 @@ sealed class Screen {
  * hold and scope an instance of this later without this class needing to
  * change.
  *
- * `sessionStore`, when the platform supplies one, remembers the server and
- * session token across launches. See restoreSession().
+ * The vault is on a server (RemoteVaultBackend). `sessionStore`, when the
+ * platform supplies one, remembers the server and session token across
+ * launches (see restoreSession()).
  */
 class AppState(private val sessionStore: SessionStore? = null) {
     // With a saved server, start on the "connecting" screen rather than
@@ -56,10 +61,13 @@ class AppState(private val sessionStore: SessionStore? = null) {
      * and auto-cleared by RatatoskrApp. */
     var notice by mutableStateOf<String?>(null)
 
-    private var client: RatatoskrApiClient? = null
+    private var backend: VaultBackend? = null
 
-    private fun requireClient(): RatatoskrApiClient =
-        client ?: throw IllegalStateException("Not connected to a server yet")
+    private fun requireBackend(): VaultBackend =
+        backend ?: throw IllegalStateException("Not connected to a server yet")
+
+    private fun remote(): RemoteVaultBackend =
+        requireBackend() as? RemoteVaultBackend ?: throw IllegalStateException("Not connected to a server")
 
     /** Step 1: point the app at a server and see what it needs next.
      * Mirrors the web UI's boot() calling /auth/status before deciding
@@ -74,12 +82,12 @@ class AppState(private val sessionStore: SessionStore? = null) {
             "http://$trimmed" // most homelab deployments are plain HTTP over Tailscale, same assumption static/totp.js makes
         }
         try {
-            val candidate = RatatoskrApiClient(normalized)
-            val status = candidate.status()
-            client = candidate
+            val candidate = RemoteVaultBackend(RatatoskrApiClient(normalized))
+            val initialized = candidate.isInitialized()
+            backend = candidate
             serverUrl = normalized
             sessionStore?.save(SavedSession(normalized, token = null))
-            screen = if (status.initialized) Screen.Unlock else Screen.Setup
+            screen = if (initialized) Screen.Unlock else Screen.Setup
         } catch (e: RatatoskrConnectionException) {
             errorMessage = e.message
         } catch (e: RatatoskrApiException) {
@@ -90,20 +98,20 @@ class AppState(private val sessionStore: SessionStore? = null) {
     }
 
     /** Called once at launch: reconnects to the saved server and, if a
-     * saved token is still accepted, goes straight to the vault. Otherwise
-     * it lands on Unlock for the same server, including when the server
-     * can't be reached right now, so the user only ever re-enters their
-     * credentials (unlocking retries the connection). The server-address
-     * screen only appears via "Change server". */
+     * saved token is still accepted, goes straight to the vault.
+     * Otherwise it lands on Unlock for the same server, including when the
+     * server can't be reached right now, so the user only ever re-enters
+     * their credentials (unlocking retries the connection). The
+     * server-address screen only appears via "Change server". */
     suspend fun restoreSession() {
         val store = sessionStore ?: return
         val saved = store.load() ?: return
         screen = Screen.CheckingServer
         serverUrl = saved.serverUrl // for the "Connecting to ..." screen
         connectToServer(saved.serverUrl)
-        if (client == null) {
+        if (backend == null) {
             // Unreachable: keep connectToServer's error message showing.
-            client = RatatoskrApiClient(saved.serverUrl)
+            backend = RemoteVaultBackend(RatatoskrApiClient(saved.serverUrl))
             serverUrl = saved.serverUrl
             screen = Screen.Unlock
             return
@@ -115,7 +123,7 @@ class AppState(private val sessionStore: SessionStore? = null) {
         val token = saved.token
         if (token == null || screen != Screen.Unlock) return
 
-        val api = requireClient()
+        val api = remote().api
         api.token = token
         try {
             val me = api.me()
@@ -141,8 +149,8 @@ class AppState(private val sessionStore: SessionStore? = null) {
     }
 
     fun changeServer() {
-        client?.close()
-        client = null
+        (backend as? RemoteVaultBackend)?.api?.close()
+        backend = null
         serverUrl = ""
         errorMessage = null
         sessionStore?.clear()
@@ -150,23 +158,22 @@ class AppState(private val sessionStore: SessionStore? = null) {
     }
 
     suspend fun setup(username: String, masterPassword: String) {
-        runAuthAction { requireClient().setup(username, masterPassword) }
+        runAuthAction { requireBackend().setup(username, masterPassword) }
     }
 
     suspend fun unlock(username: String, masterPassword: String) {
-        runAuthAction { requireClient().unlock(username, masterPassword) }
+        runAuthAction { requireBackend().unlock(username, masterPassword) }
     }
 
     suspend fun acceptInvite(username: String, inviteToken: String, masterPassword: String) {
-        runAuthAction { requireClient().acceptInvite(username, inviteToken, masterPassword) }
+        runAuthAction { remote().acceptInvite(username, inviteToken, masterPassword) }
     }
 
-    private suspend fun runAuthAction(action: suspend () -> com.ratatoskr.shared.api.AuthResponse) {
+    private suspend fun runAuthAction(action: suspend () -> AuthResponse) {
         errorMessage = null
         isLoading = true
         try {
             val response = action()
-            requireClient().token = response.token
             sessionStore?.save(SavedSession(serverUrl, response.token))
             username = response.username
             role = response.role
@@ -186,8 +193,7 @@ class AppState(private val sessionStore: SessionStore? = null) {
      * this one, which replaces the old (now revoked) token here and in the
      * SessionStore. Returns null on success, or the error to show. */
     suspend fun changePassword(currentPassword: String, newPassword: String): String? = try {
-        val response = requireClient().changePassword(currentPassword, newPassword)
-        requireClient().token = response.token
+        val response = requireBackend().changePassword(currentPassword, newPassword)
         sessionStore?.save(SavedSession(serverUrl, response.token))
         notice = "Master password changed"
         null
@@ -197,11 +203,13 @@ class AppState(private val sessionStore: SessionStore? = null) {
         e.message
     }
 
+    suspend fun generatePassword(request: GenerateRequest): String = requireBackend().generatePassword(request)
+
     suspend fun loadEntries() {
         try {
-            entries = requireClient().listEntries()
+            entries = requireBackend().listEntries()
         } catch (e: RatatoskrApiException) {
-            errorMessage = e.detail
+            fail(e)
         } catch (e: RatatoskrConnectionException) {
             errorMessage = e.message
         }
@@ -210,12 +218,12 @@ class AppState(private val sessionStore: SessionStore? = null) {
     suspend fun saveEntry(existingId: String?, entry: EntryIn): Boolean {
         errorMessage = null
         return try {
-            if (existingId != null) requireClient().updateEntry(existingId, entry)
-            else requireClient().createEntry(entry)
+            if (existingId != null) requireBackend().updateEntry(existingId, entry)
+            else requireBackend().createEntry(entry)
             loadEntries()
             true
         } catch (e: RatatoskrApiException) {
-            errorMessage = e.detail
+            fail(e)
             false
         } catch (e: RatatoskrConnectionException) {
             errorMessage = e.message
@@ -226,11 +234,11 @@ class AppState(private val sessionStore: SessionStore? = null) {
     suspend fun deleteEntry(id: String): Boolean {
         errorMessage = null
         return try {
-            requireClient().deleteEntry(id)
+            requireBackend().deleteEntry(id)
             loadEntries()
             true
         } catch (e: RatatoskrApiException) {
-            errorMessage = e.detail
+            fail(e)
             false
         } catch (e: RatatoskrConnectionException) {
             errorMessage = e.message
@@ -244,9 +252,9 @@ class AppState(private val sessionStore: SessionStore? = null) {
     suspend fun exportCsv(): String? {
         errorMessage = null
         return try {
-            requireClient().exportCsv()
+            requireBackend().exportCsv()
         } catch (e: RatatoskrApiException) {
-            errorMessage = e.detail
+            fail(e)
             null
         } catch (e: RatatoskrConnectionException) {
             errorMessage = e.message
@@ -260,7 +268,7 @@ class AppState(private val sessionStore: SessionStore? = null) {
     suspend fun importCsv(fileName: String, bytes: ByteArray): ImportResult? {
         errorMessage = null
         return try {
-            val result = requireClient().importCsv(fileName, bytes)
+            val result = requireBackend().importCsv(fileName, bytes)
             var msg = "Imported ${result.imported} entr${if (result.imported == 1) "y" else "ies"}"
             if (result.skipped > 0) msg += ", skipped ${result.skipped} blank row${if (result.skipped == 1) "" else "s"}"
             if (result.errors.isNotEmpty()) msg += ", ${result.errors.size} error(s)"
@@ -268,7 +276,7 @@ class AppState(private val sessionStore: SessionStore? = null) {
             loadEntries()
             result
         } catch (e: RatatoskrApiException) {
-            errorMessage = e.detail
+            fail(e)
             null
         } catch (e: RatatoskrConnectionException) {
             errorMessage = e.message
@@ -276,20 +284,35 @@ class AppState(private val sessionStore: SessionStore? = null) {
         }
     }
 
+    /** A 401 on a vault call means the session is gone (server idle
+     * timeout or restart): back to Unlock, not an error banner on a vault
+     * that no longer works. */
+    private fun fail(e: RatatoskrApiException) {
+        if (e.statusCode == 401) lockedOut(e.detail) else errorMessage = e.detail
+    }
+
+    private fun lockedOut(message: String) {
+        (backend as? RemoteVaultBackend)?.api?.token = null
+        sessionStore?.save(SavedSession(serverUrl, token = null))
+        clearVault()
+        errorMessage = message
+    }
+
     suspend fun lock() {
         try {
-            client?.lock()
+            backend?.lock()
         } catch (_: Exception) {
             // best-effort, same as the web UI's lock button. Still clear
             // local state below even if the network call fails
         }
-        requireClient().token = null
         sessionStore?.save(SavedSession(serverUrl, token = null))
+        clearVault()
+    }
+
+    private fun clearVault() {
         entries = emptyList()
         username = ""
         role = ""
         screen = Screen.Unlock
     }
-
-    fun api(): RatatoskrApiClient = requireClient()
 }

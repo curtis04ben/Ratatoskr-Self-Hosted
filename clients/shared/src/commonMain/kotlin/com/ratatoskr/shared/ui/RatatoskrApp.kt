@@ -61,6 +61,20 @@ fun RatatoskrApp(
 
     LaunchedEffect(Unit) { appState.restoreSession() }
 
+    // Leaving the vault (Lock, or a lost session) closes the
+    // vault's dialogs, so none is left open over the Unlock screen.
+    LaunchedEffect(appState.screen) {
+        if (appState.screen != Screen.Vault) {
+            editingEntry = null
+            showNewEntryDialog = false
+            showGeneratorDialog = false
+            showExportDialog = false
+            showChangePasswordDialog = false
+            importFile = null
+            importErrors = emptyList()
+        }
+    }
+
     // Same 2.4s lifetime as the web UI's toast().
     LaunchedEffect(appState.notice) {
         if (appState.notice != null) {

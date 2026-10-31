@@ -14,7 +14,7 @@ to go, and nowhere else.
 > the vault, does the cryptography, and serves the **web UI**. The native
 > **Linux** and **Android** apps (in [`../clients/`](../clients/),
 > downloadable from the
-> [Releases page](https://github.com/curtis04ben/Ratatoskr/releases)) are
+> [Releases page](https://github.com/curtis04ben/Ratatoskr-Self-Hosted/releases)) are
 > clients of this server's REST API; Windows and macOS are in the works,
 > and iOS and a browser extension are planned. See the
 > [project README](../README.md) for the overview and

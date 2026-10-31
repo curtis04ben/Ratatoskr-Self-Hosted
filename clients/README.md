@@ -168,7 +168,16 @@ Android-specific:
   - Tests: `./gradlew :android:testDebugUnitTest` (matching rules).
 
 App ID `io.github.curtis04ben.ratatoskr` (lowercase by Android
-convention). Like the desktop ID, it's permanent once released. Minimum
+convention). Like the desktop ID, it's permanent once released. The
+launcher name is "Ratatoskr Self-Hosted", to tell it apart from the
+standalone Ratatoskr app (a separate project, `...ratatoskr.local`); the
+autofill service ignores both apps' own screens.
+
+**Icons** everywhere (Android launcher and in-app logo, Linux icons, the
+web UI's favicon and header) are generated from
+`shared/assets/ratatoskr-self-hosted.jpg` (1024 px) with ImageMagick. The
+Android adaptive icon is the whole image on its own background colour
+(`#151618`), plus a monochrome layer of just the artwork for themed icons. Minimum
 Android 8.0 (API 26), which is where the Autofill Framework starts.
 
 ### Building and running

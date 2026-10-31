@@ -17,7 +17,7 @@ priority: optional
 # personal email out of the packages.
 maintainer: Ben Curtis <curtis04ben@users.noreply.github.com>
 vendor: Ratatoskr
-homepage: https://github.com/curtis04ben/Ratatoskr
+homepage: https://github.com/curtis04ben/Ratatoskr-Self-Hosted
 license: LicenseRef-Unspecified
 description: |
   Native desktop client for the self-hosted Ratatoskr password manager.
@@ -80,4 +80,4 @@ rpm:
 
 deb:
   fields:
-    Bugs: https://github.com/curtis04ben/Ratatoskr/issues
+    Bugs: https://github.com/curtis04ben/Ratatoskr-Self-Hosted/issues
