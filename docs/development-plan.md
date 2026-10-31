@@ -15,7 +15,7 @@ each time.
 |---|---|---|---|
 | Server + web UI | 2.4.0 | none (deployed from source) | `server/app/main.py` holds the version |
 | Linux app | 0.1.4 | `linux-v0.1.4` | `ratatoskrDesktopVersion` in `clients/gradle.properties` |
-| Android app | 0.2.0 | `android-v0.2.0` | `ratatoskrAndroidVersion`; release key + 4 GitHub secrets in place. 0.2.0 adds Autofill |
+| Android app | 0.2.1 | `android-v0.2.1` | `ratatoskrAndroidVersion`; release key + 4 GitHub secrets in place. 0.2.0 added Autofill; 0.2.1 has the new logo and launcher name "Ratatoskr Self-Hosted" |
 | Windows / macOS | not yet | not yet | Phases 4/5 below: packaging on the same `desktop/` module |
 | Android biometric unlock | not yet | not yet | Phase 3.1 below |
 | Android Autofill | 0.2.0 | with the app | Phase 3.2 below: stages 1 to 3 done |
