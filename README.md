@@ -123,7 +123,9 @@ viewing, adding, editing and deleting entries, 2FA codes, the password
 generator, CSV import/export and changing your master password. They
 remember your server after the first time, so later launches only ask for
 your username and master password (**Change server** on that screen
-switches to another one). A few things still need the web UI:
+switches to another one). The Android app can also be your phone's
+autofill service, suggesting saved logins in other apps and browsers and
+offering to save new ones. A few things still need the web UI:
 
 - sharing entries with other people;
 - the admin **Users** panel (creating invites, changing roles, removing

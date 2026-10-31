@@ -35,5 +35,36 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Autofill (Phase 3.2): suggests saved logins in other apps and
+          browsers, and offers to save new ones. Only active once the user
+          picks Ratatoskr as the autofill service in system settings.
+        -->
+        <service
+            android:name=".autofill.RatatoskrAutofillService"
+            android:label="Ratatoskr"
+            android:exported="true"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.autofill"
+                android:resource="@xml/autofill_service" />
+        </service>
+
+        <!--
+          Unlock / choose / save screens shown over another app. Its own
+          empty task affinity and no recents entry, so finishing returns
+          straight to that app.
+        -->
+        <activity
+            android:name=".autofill.AutofillActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|density|uiMode|locale|layoutDirection|fontScale"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Autofill service metadata. "Settings" next to Ratatoskr in the
+     system's autofill picker opens the app itself. -->
+<autofill-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="com.ratatoskr.android.MainActivity" />

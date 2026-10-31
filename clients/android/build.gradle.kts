@@ -29,8 +29,8 @@ android {
         // different app. Lowercase by Android convention; otherwise matches
         // the desktop app ID.
         applicationId = "io.github.curtis04ben.ratatoskr"
-        // 26 = Android 8.0, where the Autofill Framework (the Phase 3.x
-        // stretch goal) arrived.
+        // 26 = Android 8.0, where the Autofill Framework (see autofill/)
+        // arrived.
         minSdk = 26
         targetSdk = 37
         versionCode = appVersionCode
@@ -69,5 +69,9 @@ dependencies {
     // Kept in step with :shared's Compose versions.
     implementation("org.jetbrains.compose.foundation:foundation:1.12.1")
     implementation("org.jetbrains.compose.ui:ui:1.12.1")
+    // Autofill's own screens use the shared theme's Material components.
+    implementation("org.jetbrains.compose.material3:material3:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+
+    testImplementation(kotlin("test-junit"))
 }

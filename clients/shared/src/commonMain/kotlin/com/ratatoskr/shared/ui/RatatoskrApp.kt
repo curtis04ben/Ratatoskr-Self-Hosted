@@ -38,13 +38,15 @@ import kotlinx.coroutines.launch
  * and small at the left of the vault header. `files` likewise
  * comes from the platform and enables CSV import/export when present, and
  * `sessionStore` lets the app remember its server and session across
- * launches (see AppState.restoreSession).
+ * launches (see AppState.restoreSession). `onAutofillSettings`, Android
+ * only, opens the system screen for choosing the autofill service.
  */
 @Composable
 fun RatatoskrApp(
     appIcon: Painter? = null,
     files: PlatformFiles? = null,
     sessionStore: SessionStore? = null,
+    onAutofillSettings: (() -> Unit)? = null,
 ) {
     val appState = remember { AppState(sessionStore) }
     var editingEntry by remember { mutableStateOf<EntryOut?>(null) }
@@ -82,6 +84,7 @@ fun RatatoskrApp(
                     onNewEntry = { showNewEntryDialog = true },
                     onEditEntry = { editingEntry = it },
                     appIcon = appIcon,
+                    onAutofillSettings = onAutofillSettings,
                     onOpenGenerator = {
                         generatorTarget = null
                         showGeneratorDialog = true

@@ -15,10 +15,10 @@ each time.
 |---|---|---|---|
 | Server + web UI | 2.4.0 | none (deployed from source) | `server/app/main.py` holds the version |
 | Linux app | 0.1.4 | `linux-v0.1.4` | `ratatoskrDesktopVersion` in `clients/gradle.properties` |
-| Android app | 0.1.3 | `android-v0.1.3` | `ratatoskrAndroidVersion`; release key + 4 GitHub secrets in place |
+| Android app | 0.2.0 | `android-v0.2.0` | `ratatoskrAndroidVersion`; release key + 4 GitHub secrets in place. 0.2.0 adds Autofill |
 | Windows / macOS | not yet | not yet | Phases 4/5 below: packaging on the same `desktop/` module |
 | Android biometric unlock | not yet | not yet | Phase 3.1 below |
-| Android Autofill | not yet | not yet | Phase 3.2 below |
+| Android Autofill | 0.2.0 | with the app | Phase 3.2 below: stages 1 to 3 done |
 
 Both native apps cover: connect (server remembered), setup, unlock,
 accept-invite, entry list/search/create/edit/delete, live TOTP, password
@@ -61,7 +61,9 @@ only if something makes one unworkable, and say so):
    Windows and macOS jobs to the desktop workflow as those phases land.
 3. **Windows** (Phase 4), tested in a VM.
 4. **macOS** (Phase 5), including the signing decision and Touch ID.
-5. **Android Autofill** (Phase 3.2).
+5. ~~**Android Autofill** (Phase 3.2).~~ Stages 1 to 3 done in Android 0.2.0;
+   inline keyboard suggestions (stage 4) and biometric unlock in the
+   autofill unlock screen remain.
 6. **Desktop "stay signed in"** via each OS's keyring (Desktop session
    storage).
 7. **Sharing and the admin Users panel in the apps** (Phase 2 fast-follows).
@@ -282,7 +284,7 @@ skipped because its generated `.desktop` file can't carry the app ID or
 `StartupWMClass`. Pushing a `linux-vX.Y.Z` tag publishes a GitHub Release
 via `.github/workflows/linux-client-release.yml`. Details: `clients/README.md`.
 
-### Phase 3: Android (released; biometrics are 3.1, Autofill 3.2)
+### Phase 3: Android (released; biometrics are 3.1, Autofill 3.2 done)
 
 Mostly reuse: `clients/shared`'s screens carry over directly. `:shared`
 gained an Android target (AGP's KMP library plugin, OkHttp engine) and
@@ -416,7 +418,20 @@ only, and check what `canAuthenticate` reports). Cases:
 `adb` can't fake a fingerprint on a real device, so a person has to
 touch the sensor; script everything around that.
 
-### Phase 3.2: Android Autofill
+### Phase 3.2: Android Autofill (stages 1 to 3 done, Android 0.2.0)
+
+**What was built** (`clients/android/.../autofill/`, summarised in
+`clients/README.md`): the service, field detection, locked/unlocked
+responses, website matching (trusted browsers only), app matching via
+`androidapp://<package>` URLs on entries saved from an app plus on-device
+pairings from "Search Ratatoskr…" (the on-device option below, so no
+server schema change), and save/update requests. Tested on the owner's
+Galaxy A55 (Android 16) with a sample login app and Firefox. Still open:
+stage 4 (inline suggestions), offering Phase 3.1's biometric unlock in
+`AutofillActivity` once it exists, and Digital Asset Links.
+
+The original plan, kept for reference:
+
 
 Goal: Ratatoskr as the phone's autofill service, filling logins in other
 apps and (via the browser) websites. This is a genuinely different

@@ -68,7 +68,7 @@ fun ServerConnectScreen(appState: AppState, appIcon: Painter? = null) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Text(
-                "e.g. tempinfra.tail92211e.ts.net:8000. http:// is assumed if you don't specify",
+                "e.g. 192.168.1.50:8000. http:// is assumed if you don't specify",
                 style = MaterialTheme.typography.bodySmall,
                 color = RatatoskrColors.TextMuted,
                 modifier = Modifier.padding(top = 6.dp, bottom = 16.dp),

@@ -3,4 +3,8 @@
     <!-- RatatoskrColors.Bg in the shared theme -->
     <color name="ic_launcher_background">#12181C</color>
     <color name="window_background">#12181C</color>
+    <!-- Autofill dropdown rows (layout/autofill_item.xml). -->
+    <color name="autofill_background">#FFFFFFFF</color>
+    <color name="autofill_title">#FF1F1F1F</color>
+    <color name="autofill_subtitle">#FF5F6368</color>
 </resources>

@@ -147,11 +147,29 @@ Android-specific:
 - **Manifest**: `INTERNET` is the only permission. Plain `http://` is
   allowed because home servers usually don't have TLS; the connect screen
   warns when the address isn't `https://`.
+- **Autofill** (`autofill/`): Ratatoskr as the phone's autofill service,
+  like Samsung Pass. Turn it on from the vault's ⋮ menu, **Autofill
+  settings** (or Settings, Passwords and autofill). On a login form in
+  another app or a browser it suggests matching entries, or "Unlock
+  Ratatoskr" while locked; after a sign-in with a password it doesn't
+  have, it offers to save it (or update the entry whose password changed).
+  - *Matching:* web pages match an entry's URL by site (`mail.google.com`
+    matches `google.com`), but only in known browsers (`TRUSTED_BROWSERS`),
+    since an app could read what's filled into its own WebView. Apps match
+    entries saved from them (URL `androidapp://<package>`, the convention
+    other managers use) or an entry picked for them once via "Search
+    Ratatoskr…"; those pairings are kept on the device. Nothing is matched
+    by name guessing.
+  - *Session:* uses the app's saved server and encrypted token, so
+    unlocking in either place unlocks both. Entries are fetched per request
+    and never cached. Fill needs the server reachable.
+  - *Chrome* only hands forms to another service once **Autofill using
+    another service** is on in Chrome's settings. Firefox works directly.
+  - Tests: `./gradlew :android:testDebugUnitTest` (matching rules).
 
 App ID `io.github.curtis04ben.ratatoskr` (lowercase by Android
 convention). Like the desktop ID, it's permanent once released. Minimum
-Android 8.0 (API 26), which is where the Autofill Framework (a Phase 3.x
-goal) starts.
+Android 8.0 (API 26), which is where the Autofill Framework starts.
 
 ### Building and running
 

@@ -62,7 +62,7 @@ internal fun parseErrorDetail(body: String): String? {
 
 /**
  * One instance per configured server. `baseUrl` is whatever the user typed
- * on the server-connect screen (e.g. "http://tempinfra.tail92211e.ts.net:8000"),
+ * on the server-connect screen (e.g. "http://192.168.1.50:8000"),
  * normalized to strip a trailing slash. `token` is set after a successful
  * unlock/setup/accept-invite and cleared on lock. It's held in memory here;
  * AppState persists it (encrypted) only where the platform supplies a

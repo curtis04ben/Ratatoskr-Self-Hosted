@@ -95,7 +95,7 @@ jobs:
       - name: Test
         run: |
           set -o pipefail
-          ./gradlew --no-daemon :shared:jvmTest 2>&1 | tee "$RUNNER_TEMP/test.log" || {
+          ./gradlew --no-daemon :shared:jvmTest :android:testDebugUnitTest 2>&1 | tee "$RUNNER_TEMP/test.log" || {
             echo "::error title=Tests failed::$(sed -n '/What went wrong/,/\* Try/p' "$RUNNER_TEMP/test.log" | head -25 | tr '\n' ' ')"
             exit 1
           }

@@ -47,7 +47,9 @@ import kotlinx.coroutines.launch
  * intentionally not here yet, deferred fast-follows per the client dev
  * plan, not an oversight. `onExport`/`onImport` are null when the platform
  * has no file picker wired up yet, which hides those buttons. `appIcon` is
- * the logo shown at the header's left, like the web UI's brand mark. */
+ * the logo shown at the header's left, like the web UI's brand mark.
+ * `onAutofillSettings` is supplied only where the OS has a password
+ * autofill service to choose (Android), and adds a menu item for it. */
 @Composable
 fun VaultScreen(
     appState: AppState,
@@ -58,6 +60,7 @@ fun VaultScreen(
     onExport: (() -> Unit)? = null,
     onImport: (() -> Unit)? = null,
     appIcon: Painter? = null,
+    onAutofillSettings: (() -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -115,6 +118,7 @@ fun VaultScreen(
                         AccountMenu(
                             onGenerate = onOpenGenerator.takeIf { compact },
                             onChangePassword = onChangePassword,
+                            onAutofillSettings = onAutofillSettings,
                         )
                     }
                 }
@@ -191,7 +195,7 @@ fun VaultScreen(
  * button. `onGenerate` is non-null only on narrow screens, where Generate
  * has no room in the header itself. */
 @Composable
-private fun AccountMenu(onGenerate: (() -> Unit)?, onChangePassword: () -> Unit) {
+private fun AccountMenu(onGenerate: (() -> Unit)?, onChangePassword: () -> Unit, onAutofillSettings: (() -> Unit)?) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         TextButton(onClick = { expanded = true }, modifier = Modifier.semantics { contentDescription = "More options" }) {
@@ -212,6 +216,12 @@ private fun AccountMenu(onGenerate: (() -> Unit)?, onChangePassword: () -> Unit)
                 text = { Text("Change master password", color = RatatoskrColors.Text) },
                 onClick = { expanded = false; onChangePassword() },
             )
+            onAutofillSettings?.let {
+                DropdownMenuItem(
+                    text = { Text("Autofill settings", color = RatatoskrColors.Text) },
+                    onClick = { expanded = false; it() },
+                )
+            }
         }
     }
 }
